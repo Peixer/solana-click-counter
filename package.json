@@ -8,7 +8,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:program-rust": "cargo build-bpf --manifest-path=./program-rust/Cargo.toml --bpf-out-dir=dist/program"
   },
   "dependencies": {
     "@heroicons/react": "^1.0.5",
@@ -26,6 +27,7 @@
     "next-compose-plugins": "^2.2.1",
     "next-transpile-modules": "^10.0.0",
     "react": "^18.2.0",
+    "mz": "^2.7.0",
     "react-dom": "^18.2.0",
     "zustand": "^3.6.9"
   },
