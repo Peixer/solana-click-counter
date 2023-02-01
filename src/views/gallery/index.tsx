@@ -10,8 +10,10 @@ export const GalleryView: FC = ({}) => {
   const { connection } = useConnection();
   const mx = Metaplex.make(connection);
   const [nft, setNft] = useState(null);
+  const [status, setStatus] = useState("");
 
   const fetchNft = async () => {
+    setStatus("loading");
     let assets: any = await mx
       .nfts()
       .findAllByOwner({ owner: wallet.publicKey });
@@ -23,6 +25,7 @@ export const GalleryView: FC = ({}) => {
     }
 
     setNft(assetsLoaded);
+    setStatus("done!");
   };
 
   return (
@@ -34,6 +37,7 @@ export const GalleryView: FC = ({}) => {
         <span>SHOW MY NFTS </span>
       </button>
 
+      <h1 className="place-content-center flex">{status}</h1>
       <div className="hero-content grid-cols-3">
         {nft &&
           nft.map((x) => (
