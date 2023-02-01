@@ -10,6 +10,7 @@ import pkg from "../../../package.json";
 import useUserSOLBalanceStore from "../../stores/useUserSOLBalanceStore";
 import { CounterView } from "views/counter";
 import { GalleryView } from "views/gallery";
+import { MintView } from "views/mint";
 
 export const HomeView: FC = ({}) => {
   const wallet = useWallet();
@@ -37,6 +38,7 @@ export const HomeView: FC = ({}) => {
 
         <div>
           <CounterView></CounterView>
+          <MintView></MintView>
           <GalleryView></GalleryView>
         </div>
       </div>
