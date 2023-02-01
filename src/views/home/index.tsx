@@ -1,33 +1,19 @@
 // Next, React
 import { FC, useEffect, useState } from "react";
-import Link from "next/link";
-import fs from "mz/fs";
-import path from "path";
-import * as borsh from "borsh";
-
 // Wallet
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 
 // Components
-import { RequestAirdrop } from "../../components/RequestAirdrop";
 import pkg from "../../../package.json";
 
 // Store
 import useUserSOLBalanceStore from "../../stores/useUserSOLBalanceStore";
-import { Button } from "@solana/wallet-adapter-react-ui/lib/types/Button";
-import {
-  PublicKey,
-  sendAndConfirmTransaction,
-  SystemProgram,
-  Transaction,
-} from "@solana/web3.js";
 import { CounterView } from "views/counter";
+import { GalleryView } from "views/gallery";
 
 export const HomeView: FC = ({}) => {
   const wallet = useWallet();
   const { connection } = useConnection();
-
-  const balance = useUserSOLBalanceStore((s) => s.balance);
   const { getUserSOLBalance } = useUserSOLBalanceStore();
 
   useEffect(() => {
@@ -51,6 +37,7 @@ export const HomeView: FC = ({}) => {
 
         <div>
           <CounterView></CounterView>
+          <GalleryView></GalleryView>
         </div>
       </div>
     </div>

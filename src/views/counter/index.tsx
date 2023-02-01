@@ -1,5 +1,5 @@
 // Next, React
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import * as borsh from "borsh";
 
 // Wallet
@@ -150,7 +150,7 @@ export const CounterView: FC = ({}) => {
   return (
     <>
       <button
-        className="px-8 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
+        className="px-8 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black grid w-full"
         onClick={incrementCount}
       >
         <span>COUNT +1 </span>
