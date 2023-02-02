@@ -29,6 +29,7 @@
     "react": "^18.2.0",
     "mz": "^2.7.0",
     "react-dom": "^18.2.0",
+    "@metaplex-foundation/mpl-auction-house": "^1.1.1",
     "@metaplex-foundation/js": "0.17.4",
     "zustand": "^3.6.9"
   },
