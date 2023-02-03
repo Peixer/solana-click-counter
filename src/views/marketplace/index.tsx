@@ -8,6 +8,8 @@ import pkg from "../../../package.json";
 // Store
 import useUserSOLBalanceStore from "../../stores/useUserSOLBalanceStore";
 import {
+  FindListingsOutput,
+  LazyListing,
   Metadata,
   Metaplex,
   Nft,
@@ -15,6 +17,7 @@ import {
   walletAdapterIdentity,
 } from "@metaplex-foundation/js";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { AuctionHouseProgram } from "@metaplex-foundation/mpl-auction-house";
 
 export const MarketplaceView: FC = ({}) => {
   const wallet = useWallet();
@@ -30,6 +33,10 @@ export const MarketplaceView: FC = ({}) => {
     "So11111111111111111111111111111111111111112"
   );
 
+  const AUCTION_HOUSE = new PublicKey(
+    "3CaWsVafJd8PgcNZXW2PeW4wDwjtW4yXjv6WYySBPedC"
+  );
+
   useEffect(() => {
     if (wallet.publicKey) {
       console.log(wallet.publicKey.toBase58());
@@ -39,6 +46,7 @@ export const MarketplaceView: FC = ({}) => {
 
   const fetchNft = async () => {
     setStatus("loading");
+
     let assets: any = await mx
       .nfts()
       .findAllByOwner({ owner: wallet.publicKey });
@@ -53,34 +61,41 @@ export const MarketplaceView: FC = ({}) => {
     setStatus("done!");
   };
 
-  const createStore = async () => {
-    mx.use(walletAdapterIdentity(wallet));
+  // const createStore = async () => {
+  //   mx.use(walletAdapterIdentity(wallet));
+  //   let auctionHouseByCreator = await mx.auctionHouse().findByAddress({
+  //     address: AUCTION_HOUSE,
+  //   });
 
-    try {
-      let auctionHouseByCreator = await mx.auctionHouse().findByCreatorAndMint({
-        creator: wallet.publicKey,
-        treasuryMint: WRAPPED_SOL_MINT,
-      });
-      setAuctionHouse(auctionHouseByCreator);
-    } catch (error) {
-      const auctionHouse = await mx.auctionHouse().create({
-        sellerFeeBasisPoints: 500,
-        authority: mx.identity(),
-        requiresSignOff: false,
-        canChangeSalePrice: true,
-      });
-      setAuctionHouse(auctionHouse);
-    }
-  };
+  //   await mx.auctionHouse().update({
+  //     auctionHouse: auctionHouseByCreator,
+  //     requiresSignOff: false,
+  //   });
+
+  //   // try {
+  //   //   // let auctionHouseByCreator = await mx.auctionHouse().findByCreatorAndMint({
+  //   //   //   creator: wallet.publicKey,
+  //   //   //   treasuryMint: WRAPPED_SOL_MINT,
+  //   //   // });
+  //   //   // setAuctionHouse(auctionHouseByCreator);
+  //   // } catch (error) {
+  //   //   // const auctionHouse = await mx.auctionHouse().create({
+  //   //   //   sellerFeeBasisPoints: 500,
+  //   //   //   authority: mx.identity(),
+  //   //   //   requiresSignOff: false,
+  //   //   //   canChangeSalePrice: true,
+  //   //   // });
+  //   //   // setAuctionHouse(auctionHouse);
+  //   // }
+  // };
 
   const createListing = async (amount, nftParam: Nft) => {
     mx.use(walletAdapterIdentity(wallet));
     try {
-      let auctionHouseByCreator = await mx.auctionHouse().findByCreatorAndMint({
-        creator: wallet.publicKey,
-        treasuryMint: WRAPPED_SOL_MINT,
+      let auctionHouseByCreator = await mx.auctionHouse().findByAddress({
+        address: AUCTION_HOUSE,
       });
-      
+
       await mx.auctionHouse().list({
         auctionHouse: auctionHouseByCreator,
         seller: mx.identity(),
@@ -96,25 +111,50 @@ export const MarketplaceView: FC = ({}) => {
   };
 
   const fetchListing = async () => {
-    let auctionHouseByCreator: any = await mx
-      .auctionHouse()
-      .findByCreatorAndMint({
-        creator: wallet.publicKey,
-        treasuryMint: WRAPPED_SOL_MINT,
-      });
+    let auctionHouseByCreator: any = await mx.auctionHouse().findByAddress({
+      address: AUCTION_HOUSE,
+    });
 
-    const listings: any = await mx
+    const listings: FindListingsOutput = await mx
       .auctionHouse()
       .findListings({ auctionHouse: auctionHouseByCreator });
 
+    listings[0].purchaseReceiptAddress;
+
+    let assetsLoaded = [];
     for (let index = 0; index < listings.length; index++) {
-      const element = listings[index].metadataAddress;
-      listings[index].nft = await mx
-        .nfts()
-        .findByMetadata({ metadata: element });
+      const element: any = listings[index];
+      if (!element.purchaseReceiptAddress) {
+        assetsLoaded.push(
+          await mx.auctionHouse().loadListing({
+            lazyListing: element,
+          })
+        );
+      }
     }
-    
-    setListings(listings);
+    setListings(assetsLoaded);
+  };
+
+  const buyNow = async (listing: LazyListing) => {
+    mx.use(walletAdapterIdentity(wallet));
+    try {
+      let auctionHouseByCreator = await mx.auctionHouse().findByAddress({
+        address: AUCTION_HOUSE,
+      });
+      const listingLoaded = await mx.auctionHouse().findListingByReceipt({
+        auctionHouse: auctionHouseByCreator,
+        receiptAddress: listing.receiptAddress,
+      });
+
+      const buy = await mx.auctionHouse().buy({
+        auctionHouse: auctionHouseByCreator,
+        listing: listingLoaded,
+        printReceipt: true,
+      });
+      debugger;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -130,17 +170,17 @@ export const MarketplaceView: FC = ({}) => {
         </div>
 
         <div>
-          <button
+          {/* <button
             className="px-8 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black  grid w-full"
             onClick={createStore}
           >
             <span>Create Store</span>
-          </button>
+          </button> */}
           <button
             className="px-8 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black  grid w-full"
             onClick={fetchListing}
           >
-            <span>SHOW MY LISTINGS </span>
+            <span>SHOW LISTINGS </span>
           </button>
           <button
             className="px-8 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black  grid w-full"
@@ -169,17 +209,22 @@ export const MarketplaceView: FC = ({}) => {
                 </>
               ))}
           </div>
-          <div className="hero-content grid-cols-3">
+          <div className="hero-content grid-cols-3 pt-32">
             {listings &&
-              listings.map((x) => (
+              listings.map((listing) => (
                 <>
-                  <div key={x.nft.uri} className="h-60 w-60 flex-row flex-wrap">
+                  <div
+                    key={listing.asset.uri}
+                    className="h-60 w-60 flex-row flex-wrap"
+                    onClick={async () => await buyNow(listing)}
+                  >
                     <h1>
-                      {x.nft.name} - SOL {x.price?.basisPoints.toNumber()}
+                      {listing.asset.name} - SOL{" "}
+                      {listing.price?.basisPoints.toNumber()}
                     </h1>
-                    <h3>{x.nft.symbol}</h3>
+                    <h3>{listing.asset.symbol}</h3>
                     <img
-                      src={x.nft.json.image}
+                      src={listing.asset.json.image}
                       alt="The downloaded illustration of the provided NFT address."
                     />
                   </div>
