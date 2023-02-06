@@ -157,6 +157,19 @@ export const MarketplaceView: FC = ({}) => {
     }
   };
 
+  const transferNow = async () => {
+    mx.use(walletAdapterIdentity(wallet));
+    try {
+      const nftParam = nft[0]
+      await mx.nfts().send({
+        mintAddress: nftParam.mint.address,
+        toOwner: new PublicKey(`HJze6XSPJ5g5kMYiUArPp9YUUrL14CDrLAvQXUoqTRz4`),
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="md:hero mx-auto p-4">
       <div className="md:hero-content flex flex-col">
@@ -181,6 +194,12 @@ export const MarketplaceView: FC = ({}) => {
             onClick={fetchListing}
           >
             <span>SHOW LISTINGS </span>
+          </button>
+          <button
+            className="px-8 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black  grid w-full"
+            onClick={transferNow}
+          >
+            <span>RANDOM TRANSFER </span>
           </button>
           <button
             className="px-8 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black  grid w-full"
