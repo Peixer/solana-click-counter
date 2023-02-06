@@ -9,7 +9,7 @@ const Home: NextPage = (props) => {
         <title>Solana Click Counter</title>
         <meta name="description" content="Solana Scaffold" />
       </Head>
-      <HomeView />
+      <MarketplaceView />
     </div>
   );
 };

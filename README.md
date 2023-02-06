@@ -19,6 +19,7 @@ The responsive version for wallets and wallet adapter may not function or work a
 npm install
 # or
 yarn install
+
 ```
 
 ## Build and Run
