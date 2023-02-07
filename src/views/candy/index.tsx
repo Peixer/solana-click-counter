@@ -1,5 +1,5 @@
 // Next, React
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 // Wallet
 import {
   useWallet,
@@ -8,6 +8,7 @@ import {
 } from "@solana/wallet-adapter-react";
 // Components
 import pkg from "../../../package.json";
+import md5 from "md5";
 
 // Store
 import useUserSOLBalanceStore from "../../stores/useUserSOLBalanceStore";
@@ -24,6 +25,7 @@ import {
   toDateTime,
   getMerkleRoot,
   sol,
+  getMerkleProof,
 } from "@metaplex-foundation/js";
 
 export const CandyView: FC = ({}) => {
@@ -35,6 +37,7 @@ export const CandyView: FC = ({}) => {
     "candyMachine",
     `GszFrxuSY5KjWkKEpqsVG58ysb2EBLqc6RAeNhM7zWwY`
   );
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     if (wallet.publicKey) {
@@ -102,21 +105,38 @@ export const CandyView: FC = ({}) => {
           address: collectionNft.address,
           updateAuthority: mx.identity(),
         },
+        // itemSettings: {
+        //   type: "hidden",
+        //   name: "My NFT Project #$ID+1$",
+        //   uri: "https://arweave.net/9kb6YluZhEYq2gmEBe0VCJIJkvI20TphuytaSh1EVs8",
+        //   // THE FILE WITH ALL OFFICIAL URI THAT WILL BE USED IN THE FUTURE
+        //   hash: md5(
+        //     "https://arweave.net/9kb6YluZhEYq2gmEBe0VCJIJkvI20TphuytaSh1EVs8"
+        //   ),
+        // },
         guards: {
+          // ALLOW LIST
           // allowList: {
           //   merkleRoot: getMerkleRoot(allowList),
           // },
           solPayment: {
-            amount: sol(1),
+            amount: sol(0.5),
             destination: mx.identity().publicKey,
           },
+          // mintLimit: {
+          //   id: 1,
+          //   limit: 1,
+          // },
         },
       });
 
+      // It must be commented for HIDDEN settings/ blind drop
       const insertItems = await mx.candyMachines().insertItems({
         candyMachine: candyMachine.candyMachine,
         items: items,
       });
+
+      setItems(items);
       setCandyMachineAddress(candyMachine.candyMachine.address.toString());
     } catch (error) {
       console.log("error", error);
@@ -161,9 +181,42 @@ export const CandyView: FC = ({}) => {
       address: new PublicKey(candyMachineAddress),
     });
 
+    const allowList = [
+      "Eg3QSugvVetekSf3N2suRkjLokChjxo5BuVg3jcLfHhV",
+      "23Y1se6WSaTaguTTAgzFK83DKWZCpfPHBjScEyt13D8t",
+      "BFGtEqbsb7NEscE9o9ewhwLjJgAnycN9C9E6S7GudFbT",
+    ];
+
+    const mintingWallet = mx.identity().publicKey.toBase58();
+
+    // ALLOW LIST
+    // await mx.candyMachines().callGuardRoute({
+    //   candyMachine,
+    //   guard: "allowList",
+    //   settings: {
+    //     path: "proof",
+    //     merkleProof: getMerkleProof(allowList, mintingWallet),
+    //   },
+    // });
+
     await mx.candyMachines().mint({
       candyMachine,
       collectionUpdateAuthority: candyMachine.authorityAddress,
+    });
+  };
+
+  const revealNFT = async () => {
+    mx.use(walletAdapterIdentity(wallet));
+    const candyMachine = await mx.candyMachines().findByAddress({
+      address: new PublicKey(candyMachineAddress),
+    });
+
+    // This should be done for all NFT Minted
+    const nft = await mx.nfts().findByToken({token: new PublicKey(`GWG5sZwZvesHKm1ui1ba5JyvkaNEd5F1swoqT6Gbj5H`)})
+    await mx.nfts().update({
+      nftOrSft: nft,
+      name: `REVELEAD - My NFT Project`,
+      uri: `https://arweave.net/Jfl5PEhx7X9ck-8CXbbtlrJtSuRcH3EUtZrF5n-6xiI`
     });
   };
 
@@ -214,8 +267,15 @@ export const CandyView: FC = ({}) => {
           >
             <span>LIVE ON</span>
           </button>
+          <button
+            className="px-8 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black  grid w-full"
+            onClick={revealNFT}
+          >
+            <span>REVEAL NFT</span>
+          </button>
         </div>
       </div>
     </div>
   );
 };
+
