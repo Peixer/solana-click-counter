@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^1.0.5",
-    "@metaplex-foundation/js": "0.17.4",
+    "@metaplex-foundation/js": "^0.17.4",
     "@metaplex-foundation/js-plugin-nft-storage": "^0.18.0",
     "@metaplex-foundation/mpl-auction-house": "^1.1.1",
     "@metaplex-foundation/mpl-metaplex": "^0.0.5",
