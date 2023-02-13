@@ -27,7 +27,7 @@ import {
 import {
   createInitPackInstruction,
   PackDistributionType,
-} from "@metaplex-foundation/mpl-nft-packs";
+} from "glaicon-nft-packs";
 
 export const PackView: FC = ({}) => {
   const wallet = useWallet();
