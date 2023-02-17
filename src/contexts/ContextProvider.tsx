@@ -26,10 +26,13 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const { autoConnect } = useAutoConnect();
     const { networkConfiguration } = useNetworkConfiguration();
     const network = networkConfiguration as WalletAdapterNetwork;
-    // const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-    const endpoint = "http://127.0.0.1:8899"
-
-    console.log(network);
+    const endpoint = useMemo(
+      () =>
+        network.toString() == `testnet`
+          ? "http://127.0.0.1:8899"
+          : clusterApiUrl(network),
+      [network]
+    );
 
     const wallets = useMemo(
         () => [
